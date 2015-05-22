@@ -20,7 +20,7 @@
   (delay (remove pod/dependency-loaded? '[[com.cemerick/piggieback   "0.2.1"]
                                           [org.clojure/tools.nrepl   "0.2.10"]
                                           [org.clojars.osbert/weasel "0.7.0-SNAPSHOT"]
-                                          [org.clojure/clojurescript "0.0-3165"]])))
+                                          [org.clojure/clojurescript "0.0-3269"]])))
 
 (defn- repl-deps []
   (let [deps       (->> (b/get-env) pod/resolve-dependencies (map :dep))
