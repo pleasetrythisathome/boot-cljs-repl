@@ -17,9 +17,10 @@
 (def ^:private out-file (atom nil))
 
 (def ^:private deps
-  (delay (remove pod/dependency-loaded? '[[com.cemerick/piggieback   "0.1.5"]
-                                          [weasel                    "0.6.0-SNAPSHOT"]
-                                          [org.clojure/clojurescript "0.0-2814"]])))
+  (delay (remove pod/dependency-loaded? '[[com.cemerick/piggieback   "0.2.1"]
+                                          [org.clojure/tools.nrepl   "0.2.10"]
+                                          [weasel                    "0.7.0-SNAPSHOT"]
+                                          [org.clojure/clojurescript "0.0-3269"]])))
 
 (defn- repl-deps []
   (let [deps       (->> (b/get-env) pod/resolve-dependencies (map :dep))
@@ -47,10 +48,6 @@
          :ups-libs ups-libs
          :ups-foreign-libs ups-foreign-libs
          (when ip [:ip ip])))
-
-(defn- weasel-port
-  []
-  (->> @@(r weasel.repl.server/state) :server meta :local-port))
 
 (defn- weasel-stop
   []
@@ -80,8 +77,7 @@
         clih     (if (and i (not= i "0.0.0.0")) i "localhost")
         ups-deps (get-upstream-deps)
         repl-env (weasel-connection i p (:libs ups-deps) (:foreign-libs ups-deps))
-        port     (weasel-port)
-        conn     (format "ws://%s:%d" clih port)]
+        conn     (format "ws://%s:%d" clih p)]
     (make-repl-connect-file conn)
     repl-env))
 
@@ -91,13 +87,11 @@
   Keyword Options:
     :ip     str   The IP address the websocket server will listen on.
     :port   int   The port the websocket server will listen on."
-  [& {i :ip p :port}]
-  (let [i    (or i @ws-ip)
-        p    (or p @ws-port)
-        clih (if (and i (not= i "0.0.0.0")) i "localhost")]
-    ((r cemerick.piggieback/cljs-repl) :repl-env (repl-env :ip i :port p))
-    (let [port (weasel-port)
-          conn (format "ws://%s:%d" clih port)]
+  [& {i :ip p :port}]  (let [ip   (or i @ws-ip)
+        port (or p @ws-port)
+        clih (if (and ip (not= ip "0.0.0.0")) ip "localhost")]
+    ((r cemerick.piggieback/cljs-repl) (repl-env :ip ip :port port))
+    (let [conn (format "ws://%s:%d" clih port)]
       (make-repl-connect-file conn)
       nil)))
 
